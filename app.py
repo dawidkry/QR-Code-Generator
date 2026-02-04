@@ -6,42 +6,21 @@ Perfect for sharing web apps, dashboards, or any online resources with colleague
 
 ## Features
 
-- Generate QR codes from a list of URLs
+- Generate QR codes from a list of predefined URLs
 - Display QR codes in a Streamlit dashboard for easy scanning
 - Clickable links to open URLs directly in browser
-- Save QR codes locally as PNG files
+- Save PNG codes locally for predefined URLs
+- Dynamically create a QR code for any URL without saving
 - Customizable QR code size and colors
-- Supports multiple apps / websites at once
-
-## Usage
-
-1. Update the `urls` dictionary below with your desired URLs (already included).
-2. Run the Streamlit app locally:
-
-    pip install -r requirements.txt
-    streamlit run app.py
-
-3. Or deploy to Streamlit Cloud — dependencies will install automatically from requirements.txt.
-4. Scan the QR codes displayed on the dashboard or click the links to open the URLs.
-5. PNG files of each QR code will also be saved locally for printing or sharing.
-
-## Acknowledgements
-
-Developed by **Dr. Dawid Krynicki**
-
-## License
-
-MIT License
 """
 
-# ----------------- ACTUAL CODE -----------------
 import streamlit as st
 import qrcode
 from PIL import Image
 from io import BytesIO
 import os
 
-# --- YOUR URLS ---
+# --- PREDEFINED URLS ---
 urls = {
     "Medsuite": "https://medsuite.streamlit.app/",
     "Adult Refeeding Syndrome": "https://adult-refeeding-syndrome.streamlit.app/",
@@ -52,16 +31,16 @@ urls = {
 
 st.set_page_config(page_title="QR Code Generator", page_icon="📱", layout="centered")
 st.title("📱 QR Code Generator Dashboard")
-st.markdown("Scan the QR codes or click the links below to open the corresponding apps or websites.")
 
-# Create folder for saved QR codes
+st.markdown("Scan the QR codes below or click the links to open the corresponding apps or websites.")
+
+# --- CREATE FOLDER FOR SAVED QR CODES ---
 save_folder = "qr_codes"
 if not os.path.exists(save_folder):
     os.makedirs(save_folder)
 
-# Generate and display QR codes
+# --- GENERATE AND DISPLAY PREDEFINED QR CODES ---
 for name, url in urls.items():
-    # Generate QR code
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
@@ -82,7 +61,33 @@ for name, url in urls.items():
     pil_img.save(buf, format="PNG")
     byte_im = buf.getvalue()
 
-    # Display in Streamlit
     st.markdown(f"### {name}")
     st.image(byte_im, caption=f"Scan to open {name}", use_column_width=False)
     st.markdown(f"[🔗 Click to open {name}]({url})")
+
+st.divider()
+
+# --- DYNAMIC QR CODE GENERATOR ---
+st.header("🔹 Generate a QR Code for Any URL")
+user_url = st.text_input("Enter a URL here:")
+
+if user_url:
+    qr_user = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4
+    )
+    qr_user.add_data(user_url)
+    qr_user.make(fit=True)
+    img_user = qr_user.make_image(fill_color="black", back_color="white")
+    pil_user = img_user.convert("RGB")
+
+    # Display in Streamlit
+    buf = BytesIO()
+    pil_user.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+
+    st.image(byte_im, caption=f"QR Code for {user_url}", use_column_width=False)
+    st.markdown(f"[🔗 Click to open URL]({user_url})")
+
