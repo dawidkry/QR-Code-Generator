@@ -37,9 +37,6 @@ urls = {
 - qrcode
 - Pillow
 
-## Acknowledgements
-
-Developed by **Dr. Dawid Krynicki**
 
 ## License
 
