@@ -1,4 +1,3 @@
-"""
 # QR Code Generator for URLs
 
 A Python and Streamlit app to generate QR codes for multiple URLs quickly.  
@@ -47,4 +46,3 @@ Developed by **Dr. Dawid Krynicki**
 MIT License
 
 Copyright (c) 2026 dawidkry
-"""
