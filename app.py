@@ -11,6 +11,7 @@ Perfect for sharing web apps, dashboards, or any online resources with colleague
 - Clickable links to open URLs directly in browser
 - Save PNG codes locally for predefined URLs
 - Dynamically create a QR code for any URL without saving
+- Download QR codes for copying/pasting
 - Customizable QR code size and colors
 """
 
@@ -36,18 +37,21 @@ st.title("📱 QR Code Generator Dashboard")
 st.header("🔹 Generate a QR Code for Any URL")
 user_url = st.text_input("Enter a URL here:")
 
-if user_url:
-    qr_user = qrcode.QRCode(
+def generate_qr_image(url: str) -> Image.Image:
+    qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_H,
         box_size=10,
         border=4
     )
-    qr_user.add_data(user_url)
-    qr_user.make(fit=True)
-    img_user = qr_user.make_image(fill_color="black", back_color="white")
-    pil_user = img_user.convert("RGB")
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    return img
 
+if user_url:
+    pil_user = generate_qr_image(user_url)
+    
     # Display in Streamlit
     buf = BytesIO()
     pil_user.save(buf, format="PNG")
@@ -55,6 +59,14 @@ if user_url:
 
     st.image(byte_im, caption=f"QR Code for {user_url}", use_column_width=False)
     st.markdown(f"[🔗 Click to open URL]({user_url})")
+    
+    # Download button
+    st.download_button(
+        label="💾 Download QR Code",
+        data=byte_im,
+        file_name="dynamic_QR.png",
+        mime="image/png"
+    )
 
 st.divider()
 st.markdown("### Predefined Apps QR Codes")
@@ -67,16 +79,7 @@ if not os.path.exists(save_folder):
 
 # --- GENERATE AND DISPLAY PREDEFINED QR CODES ---
 for name, url in urls.items():
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        border=4
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-    img = qr.make_image(fill_color="black", back_color="white")
-    pil_img = img.convert("RGB")
+    pil_img = generate_qr_image(url)
 
     # Save PNG locally
     filename = os.path.join(save_folder, f"{name.replace(' ', '_')}_QR.png")
@@ -90,4 +93,11 @@ for name, url in urls.items():
     st.markdown(f"### {name}")
     st.image(byte_im, caption=f"Scan to open {name}", use_column_width=False)
     st.markdown(f"[🔗 Click to open {name}]({url})")
-
+    
+    # Download button for predefined QR codes
+    st.download_button(
+        label="💾 Download QR Code",
+        data=byte_im,
+        file_name=f"{name.replace(' ', '_')}_QR.png",
+        mime="image/png"
+    )
