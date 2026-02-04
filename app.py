@@ -1,5 +1,13 @@
 """
-📱 QR Code Generator Pro – Hybrid Responsive (Desktop + Mobile)
+📱 QR Code Generator Pro – Fully Responsive
+
+Features:
+- Dynamic QR generator at the top
+- Predefined app QR codes from JSON
+- Grid layout adjusts columns automatically
+- Download buttons for all QR codes
+- QR color customization
+- Add new URLs directly via a Streamlit form
 """
 
 import streamlit as st
@@ -82,56 +90,44 @@ with st.form("add_url_form", clear_on_submit=True):
         with open(json_file, "w") as f:
             json.dump(apps, f, indent=4)
         st.success(f"Added {new_name}!")
-        st.experimental_rerun()
+        st.experimental_rerun()  # Refresh app to show new QR code
 
-# --- HYBRID RESPONSIVE GRID ---
+# --- RESPONSIVE GRID DISPLAY ---
 total_apps = len(apps)
 if total_apps == 0:
     st.info("No apps available.")
 else:
-    # CSS flexbox for mobile stacking
-    st.markdown("""
-    <style>
-    .flex-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        justify-content: flex-start;
-    }
-    .flex-item {
-        flex: 1 1 200px;  /* min width for small screens */
-        max-width: 250px;  /* max width for desktop columns */
-        text-align: center;
-        margin-bottom: 1.5rem;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    # Determine columns based on number of apps
+    # Minimum 1 column, max 4 for desktop-friendly layout
+    cols_per_row = min(max(math.ceil(total_apps / 2), 1), 4)
+    cols = st.columns(cols_per_row)
 
-    st.markdown('<div class="flex-container">', unsafe_allow_html=True)
-
-    # Maximum desktop columns
-    max_cols = 4
-    app_items = list(apps.items())
-
-    for i, (name, url) in enumerate(app_items):
+    for i, (name, url) in enumerate(apps.items()):
         pil_img = generate_qr_image(url)
+
+        # Save PNG locally
         filename = os.path.join(save_folder, f"{name.replace(' ', '_')}_QR.png")
         pil_img.save(filename)
 
+        # Convert to BytesIO for display
         buf = BytesIO()
         pil_img.save(buf, format="PNG")
         byte_im = buf.getvalue()
 
-        st.markdown('<div class="flex-item">', unsafe_allow_html=True)
-        st.markdown(f"**{name}**")
-        st.image(byte_im, caption=f"Scan to open {name}", use_column_width=True)
-        st.markdown(f"[🔗 Open {name}]({url})")
-        st.download_button(
-            label="💾 Download QR Code",
-            data=byte_im,
-            file_name=f"{name.replace(' ', '_')}_QR.png",
-            mime="image/png"
-        )
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Determine column
+        col = cols[i % cols_per_row]
 
-    st.markdown('</div>', unsafe_allow_html=True)
+        with col:
+            st.markdown(f"**{name}**")
+            st.image(byte_im, caption=f"Scan to open {name}", use_column_width=True)
+            st.markdown(f"[🔗 Open {name}]({url})")
+            st.download_button(
+                label="💾 Download QR Code",
+                data=byte_im,
+                file_name=f"{name.replace(' ', '_')}_QR.png",
+                mime="image/png"
+            )
+
+        # Start a new row after every cols_per_row
+        if (i + 1) % cols_per_row == 0:
+            cols = st.columns(cols_per_row)
