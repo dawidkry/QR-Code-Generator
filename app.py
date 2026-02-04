@@ -1,3 +1,7 @@
+"""
+📱 QR Code Generator Pro – Hybrid Responsive (Desktop + Mobile)
+"""
+
 import streamlit as st
 import qrcode
 from PIL import Image
@@ -80,36 +84,54 @@ with st.form("add_url_form", clear_on_submit=True):
         st.success(f"Added {new_name}!")
         st.experimental_rerun()
 
-# --- HYBRID GRID DISPLAY ---
+# --- HYBRID RESPONSIVE GRID ---
 total_apps = len(apps)
 if total_apps == 0:
     st.info("No apps available.")
 else:
-    # Maximum columns for desktop
-    max_columns = 4
-    # Determine columns for current row
-    cols_per_row = min(total_apps, max_columns)
-    
-    # Split apps into rows
+    # CSS flexbox for mobile stacking
+    st.markdown("""
+    <style>
+    .flex-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: flex-start;
+    }
+    .flex-item {
+        flex: 1 1 200px;  /* min width for small screens */
+        max-width: 250px;  /* max width for desktop columns */
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="flex-container">', unsafe_allow_html=True)
+
+    # Maximum desktop columns
+    max_cols = 4
     app_items = list(apps.items())
-    for i in range(0, total_apps, cols_per_row):
-        row_apps = app_items[i:i+cols_per_row]
-        cols = st.columns(len(row_apps))
-        for col, (name, url) in zip(cols, row_apps):
-            pil_img = generate_qr_image(url)
-            # Save PNG locally
-            filename = os.path.join(save_folder, f"{name.replace(' ', '_')}_QR.png")
-            pil_img.save(filename)
-            buf = BytesIO()
-            pil_img.save(buf, format="PNG")
-            byte_im = buf.getvalue()
-            with col:
-                st.markdown(f"**{name}**")
-                st.image(byte_im, caption=f"Scan to open {name}", use_column_width=True)
-                st.markdown(f"[🔗 Open {name}]({url})")
-                st.download_button(
-                    label="💾 Download QR Code",
-                    data=byte_im,
-                    file_name=f"{name.replace(' ', '_')}_QR.png",
-                    mime="image/png"
-                )
+
+    for i, (name, url) in enumerate(app_items):
+        pil_img = generate_qr_image(url)
+        filename = os.path.join(save_folder, f"{name.replace(' ', '_')}_QR.png")
+        pil_img.save(filename)
+
+        buf = BytesIO()
+        pil_img.save(buf, format="PNG")
+        byte_im = buf.getvalue()
+
+        st.markdown('<div class="flex-item">', unsafe_allow_html=True)
+        st.markdown(f"**{name}**")
+        st.image(byte_im, caption=f"Scan to open {name}", use_column_width=True)
+        st.markdown(f"[🔗 Open {name}]({url})")
+        st.download_button(
+            label="💾 Download QR Code",
+            data=byte_im,
+            file_name=f"{name.replace(' ', '_')}_QR.png",
+            mime="image/png"
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
