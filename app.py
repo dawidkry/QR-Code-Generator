@@ -7,7 +7,7 @@ Features:
 - Grid layout adjusts columns automatically
 - Download buttons for all QR codes
 - QR color customization
-- Add new URLs directly via a Streamlit form
+- Add and remove URLs directly via a Streamlit form
 """
 
 import streamlit as st
@@ -91,6 +91,19 @@ with st.form("add_url_form", clear_on_submit=True):
             json.dump(apps, f, indent=4)
         st.success(f"Added {new_name}!")
         st.experimental_rerun()  # Refresh app to show new QR code
+
+# --- FORM TO REMOVE APP ---
+if apps:
+    st.subheader("🗑 Remove App/URL")
+    with st.form("remove_url_form"):
+        remove_name = st.selectbox("Select app to remove", list(apps.keys()))
+        submit_remove = st.form_submit_button("Remove App")
+        if submit_remove and remove_name:
+            apps.pop(remove_name)
+            with open(json_file, "w") as f:
+                json.dump(apps, f, indent=4)
+            st.success(f"Removed {remove_name}!")
+            st.experimental_rerun()  # Refresh app to remove QR code
 
 # --- RESPONSIVE GRID DISPLAY ---
 total_apps = len(apps)
