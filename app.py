@@ -15,29 +15,15 @@ Perfect for sharing web apps, dashboards, or any online resources with colleague
 
 ## Usage
 
-1. Update the `urls` dictionary below with your desired URLs:
+1. Update the `urls` dictionary below with your desired URLs (already included).
+2. Run the Streamlit app locally:
 
-urls = {
-    "App 1": "https://example.com/app1",
-    "App 2": "https://example.com/app2",
-    "GitHub Repo": "https://github.com/username/repo"
-}
-
-2. Run the Streamlit app:
-
-    pip install streamlit qrcode[pil] pillow
+    pip install -r requirements.txt
     streamlit run app.py
 
-3. Scan the QR codes displayed on the dashboard or click the links to open the URLs.
-
-4. PNG files of each QR code will also be saved locally for printing or sharing.
-
-## Requirements
-
-- Python 3.x
-- Streamlit
-- qrcode
-- Pillow
+3. Or deploy to Streamlit Cloud — dependencies will install automatically from requirements.txt.
+4. Scan the QR codes displayed on the dashboard or click the links to open the URLs.
+5. PNG files of each QR code will also be saved locally for printing or sharing.
 
 ## Acknowledgements
 
@@ -57,9 +43,11 @@ import os
 
 # --- YOUR URLS ---
 urls = {
-    "NIHSS App": "https://your-streamlit-app-url.com",
-    "Another App": "https://another-app-url.com",
-    "GitHub Repo": "https://github.com/yourusername/your-repo"
+    "Medsuite": "https://medsuite.streamlit.app/",
+    "Adult Refeeding Syndrome": "https://adult-refeeding-syndrome.streamlit.app/",
+    "CHADS-BLED Web": "https://chads-bled-web.streamlit.app/",
+    "NIHSS Stroke Severity Scoring": "https://nihss-stroke-severity-scoring.streamlit.app/",
+    "Check-in SafeCheck": "https://check-in-safecheck.streamlit.app/"
 }
 
 st.set_page_config(page_title="QR Code Generator", page_icon="📱", layout="centered")
