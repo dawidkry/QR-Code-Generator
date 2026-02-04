@@ -1,5 +1,5 @@
 """
-📱 QR Code Generator Pro – Fully Responsive
+📱 QR Code Generator Pro – Fully Responsive with Multi-Removal
 
 Features:
 - Dynamic QR generator at the top
@@ -7,7 +7,9 @@ Features:
 - Grid layout adjusts columns automatically
 - Download buttons for all QR codes
 - QR color customization
-- Add and remove URLs directly via a Streamlit form
+- Add new URLs directly via a Streamlit form
+- Remove one or multiple URLs with confirmation
+- Clear all apps with confirmation
 """
 
 import streamlit as st
@@ -92,44 +94,62 @@ with st.form("add_url_form", clear_on_submit=True):
         st.success(f"Added {new_name}!")
         st.experimental_rerun()  # Refresh app to show new QR code
 
-# --- FORM TO REMOVE APP ---
+# --- FORM TO REMOVE APPS ---
 if apps:
-    st.subheader("🗑 Remove App/URL")
+    st.subheader("🗑 Remove App(s)/URL(s)")
+
     with st.form("remove_url_form"):
-        remove_name = st.selectbox("Select app to remove", list(apps.keys()))
-        submit_remove = st.form_submit_button("Remove App")
-        if submit_remove and remove_name:
-            apps.pop(remove_name)
-            with open(json_file, "w") as f:
-                json.dump(apps, f, indent=4)
-            st.success(f"Removed {remove_name}!")
-            st.experimental_rerun()  # Refresh app to remove QR code
+        selected_remove = st.multiselect(
+            "Select app(s) to remove",
+            options=list(apps.keys())
+        )
+        confirm_remove = st.checkbox("Confirm removal of selected app(s)")
+        submit_remove = st.form_submit_button("Remove Selected")
+        if submit_remove:
+            if confirm_remove and selected_remove:
+                for app_name in selected_remove:
+                    apps.pop(app_name)
+                with open(json_file, "w") as f:
+                    json.dump(apps, f, indent=4)
+                st.success(f"Removed: {', '.join(selected_remove)}")
+                st.experimental_rerun()
+            elif not confirm_remove:
+                st.warning("Please check the confirmation box before removing.")
+            elif not selected_remove:
+                st.warning("No apps selected for removal.")
+
+    # Optional: Clear all apps
+    with st.form("clear_all_form"):
+        confirm_clear = st.checkbox("Confirm clearing all apps")
+        submit_clear = st.form_submit_button("Clear All Apps")
+        if submit_clear:
+            if confirm_clear:
+                apps.clear()
+                with open(json_file, "w") as f:
+                    json.dump(apps, f, indent=4)
+                st.success("All apps cleared!")
+                st.experimental_rerun()
+            else:
+                st.warning("Please check the confirmation box before clearing all apps.")
 
 # --- RESPONSIVE GRID DISPLAY ---
 total_apps = len(apps)
 if total_apps == 0:
     st.info("No apps available.")
 else:
-    # Determine columns based on number of apps
-    # Minimum 1 column, max 4 for desktop-friendly layout
     cols_per_row = min(max(math.ceil(total_apps / 2), 1), 4)
     cols = st.columns(cols_per_row)
 
     for i, (name, url) in enumerate(apps.items()):
         pil_img = generate_qr_image(url)
-
-        # Save PNG locally
         filename = os.path.join(save_folder, f"{name.replace(' ', '_')}_QR.png")
         pil_img.save(filename)
 
-        # Convert to BytesIO for display
         buf = BytesIO()
         pil_img.save(buf, format="PNG")
         byte_im = buf.getvalue()
 
-        # Determine column
         col = cols[i % cols_per_row]
-
         with col:
             st.markdown(f"**{name}**")
             st.image(byte_im, caption=f"Scan to open {name}", use_column_width=True)
@@ -141,6 +161,5 @@ else:
                 mime="image/png"
             )
 
-        # Start a new row after every cols_per_row
         if (i + 1) % cols_per_row == 0:
             cols = st.columns(cols_per_row)
