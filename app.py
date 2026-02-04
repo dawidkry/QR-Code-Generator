@@ -32,6 +32,32 @@ urls = {
 st.set_page_config(page_title="QR Code Generator", page_icon="📱", layout="centered")
 st.title("📱 QR Code Generator Dashboard")
 
+# --- DYNAMIC QR CODE GENERATOR AT THE TOP ---
+st.header("🔹 Generate a QR Code for Any URL")
+user_url = st.text_input("Enter a URL here:")
+
+if user_url:
+    qr_user = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=4
+    )
+    qr_user.add_data(user_url)
+    qr_user.make(fit=True)
+    img_user = qr_user.make_image(fill_color="black", back_color="white")
+    pil_user = img_user.convert("RGB")
+
+    # Display in Streamlit
+    buf = BytesIO()
+    pil_user.save(buf, format="PNG")
+    byte_im = buf.getvalue()
+
+    st.image(byte_im, caption=f"QR Code for {user_url}", use_column_width=False)
+    st.markdown(f"[🔗 Click to open URL]({user_url})")
+
+st.divider()
+st.markdown("### Predefined Apps QR Codes")
 st.markdown("Scan the QR codes below or click the links to open the corresponding apps or websites.")
 
 # --- CREATE FOLDER FOR SAVED QR CODES ---
@@ -64,30 +90,4 @@ for name, url in urls.items():
     st.markdown(f"### {name}")
     st.image(byte_im, caption=f"Scan to open {name}", use_column_width=False)
     st.markdown(f"[🔗 Click to open {name}]({url})")
-
-st.divider()
-
-# --- DYNAMIC QR CODE GENERATOR ---
-st.header("🔹 Generate a QR Code for Any URL")
-user_url = st.text_input("Enter a URL here:")
-
-if user_url:
-    qr_user = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=10,
-        border=4
-    )
-    qr_user.add_data(user_url)
-    qr_user.make(fit=True)
-    img_user = qr_user.make_image(fill_color="black", back_color="white")
-    pil_user = img_user.convert("RGB")
-
-    # Display in Streamlit
-    buf = BytesIO()
-    pil_user.save(buf, format="PNG")
-    byte_im = buf.getvalue()
-
-    st.image(byte_im, caption=f"QR Code for {user_url}", use_column_width=False)
-    st.markdown(f"[🔗 Click to open URL]({user_url})")
 
