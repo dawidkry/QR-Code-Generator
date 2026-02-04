@@ -1,20 +1,18 @@
-# --- INSTALL REQUIREMENTS ---
-# pip install streamlit qrcode[pil] pillow
-
 import streamlit as st
 import qrcode
 from PIL import Image
-from io import BytesIO
 
 # --- YOUR URLS ---
-# Add as many URLs as you want
+# Add your URLs here. Key = label, Value = URL
 urls = {
     "NIHSS App": "https://your-streamlit-app-url.com",
     "Another App": "https://another-app-url.com",
     "GitHub Repo": "https://github.com/yourusername/your-repo"
 }
 
-st.title("📱 Scan QR Codes to Open Apps / Sites")
+st.set_page_config(page_title="QR Code Generator", page_icon="📱", layout="centered")
+st.title("📱 QR Code Generator Dashboard")
+st.markdown("Scan the QR codes below to open the corresponding apps or websites.")
 
 for name, url in urls.items():
     # Generate QR code
@@ -27,14 +25,14 @@ for name, url in urls.items():
     qr.add_data(url)
     qr.make(fit=True)
     img = qr.make_image(fill_color="black", back_color="white")
-
-    # Convert to PIL Image (optional, if you want to manipulate or show in Streamlit)
+    
+    # Convert to PIL Image
     pil_img = img.convert("RGB")
     
     # Display in Streamlit
     st.markdown(f"**{name}**")
     st.image(pil_img, caption=f"Scan to open {name}", use_column_width=False)
-
-    # Save PNG locally
+    
+    # Save locally as PNG
     filename = f"{name.replace(' ', '_')}_QR.png"
     pil_img.save(filename)
