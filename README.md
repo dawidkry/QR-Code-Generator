@@ -45,4 +45,6 @@ Developed by **Dr. Dawid Krynicki**
 ## License
 
 MIT License
+
+Copyright (c) 2026 dawidkry
 """
